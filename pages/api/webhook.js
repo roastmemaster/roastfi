@@ -13,7 +13,6 @@ export const config = {
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     const sig = req.headers['stripe-signature'];
-
     let event;
 
     try {
@@ -30,12 +29,7 @@ export default async function handler(req, res) {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-
-      // 🚨 Generate roast + meme here
       console.log('✅ Payment received from:', session.customer_email);
-      console.log('Generating roast for:', session.id);
-
-      // You could trigger OpenAI + DALL·E here or save to DB
     }
 
     res.status(200).json({ received: true });
@@ -44,4 +38,3 @@ export default async function handler(req, res) {
     res.status(405).end('Method Not Allowed');
   }
 }
-
