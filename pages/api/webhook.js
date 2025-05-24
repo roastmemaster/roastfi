@@ -2,14 +2,14 @@
 import { buffer } from 'micro';
 import Stripe from 'stripe';
 
-const stripe = new Stripe('', {
+// ✅ Use environment variable for your secret key
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-04-10',
 });
 
-
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // Required by Stripe to validate signature
   },
 };
 
@@ -26,19 +26,20 @@ export default async function handler(req, res) {
         process.env.STRIPE_WEBHOOK_SECRET
       );
     } catch (err) {
-      console.error('Webhook Error:', err.message);
+      console.error('❌ Webhook signature verification failed:', err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
+    // ✅ Handle successful checkout session
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       console.log('✅ Payment received from:', session.customer_email);
     }
 
-    res.status(200).json({ received: true });
+    // Acknowledge receipt of the event
+    return res.status(200).json({ received: true });
   } else {
     res.setHeader('Allow', 'POST');
     res.status(405).end('Method Not Allowed');
   }
 }
-// webhook.js
